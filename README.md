@@ -1,437 +1,327 @@
-from pathlib import Path
+# 4-bit Adder/Subtractor --- RTL Design & Verification
 
-readme = r"""# Day 1 — 4-Bit Adder/Subtractor
+![Verilog](https://img.shields.io/badge/HDL-Verilog-blue)
+![Domain](https://img.shields.io/badge/Domain-Digital%20VLSI-orange)
+![Design](https://img.shields.io/badge/Design-4--bit%20Adder%2FSubtractor-green)
+![Tool](https://img.shields.io/badge/Synthesis-Cadence%20Genus-red)
 
-<p align="center">
-  <b>Digital VLSI • Verilog RTL • Functional Verification • Cadence Genus</b>
-</p>
+## Project Information
 
-<p align="center">
-  <code>RTL → Simulation → Waveform → Synthesis → Hierarchy → Area → Power → Timing</code>
-</p>
+  Item           Details
+  -------------- ----------------------------------
+  Project        Day 1
+  Design Title   `adder_subtractor_4bit`
+  Domain         Digital VLSI / RTL Design
+  HDL            Verilog HDL
+  Design Type    Combinational Arithmetic Circuit
+  Verification   Directed RTL Testbench
+  Synthesis      Cadence Genus
+  Library        `tsmc18`
+  Top Module     `adder_subtractor_4bit`
 
----
+------------------------------------------------------------------------
 
 ## 1. Project Overview
 
-This is **Day 1** of a structured **Digital VLSI / RTL Design training project series**.
+This project implements and verifies a **4-bit binary adder/subtractor**
+using structural Verilog HDL.
 
-The project implements a hierarchical **4-bit Adder/Subtractor** in **Verilog HDL** and takes the design through an RTL-to-synthesis analysis flow.
+The design supports two arithmetic operations selected by the `MODE`
+input:
 
-### Main Design
+-   `MODE = 0` → 4-bit addition
+-   `MODE = 1` → 4-bit subtraction using two's-complement arithmetic
 
-```text
-adder_subtractor_4bit
+The project was developed through an RTL-to-synthesis flow covering:
 
-The design supports:
+**Specification → RTL Design → Testbench → Simulation → Waveform
+Verification → Gate-Level Verification → Synthesis → Hierarchy → Area →
+Power → Timing Analysis**
 
-4-bit binary addition
-4-bit binary subtraction
-Two's-complement subtraction
-Structural RTL hierarchy
-Directed functional verification
-RTL waveform verification
-Cadence Genus synthesis
-Synthesized hierarchy analysis
-Cell-area analysis
-Power analysis
-Timing-path analysis
-Engineering Flow
-Specification
-     │
-     ▼
-RTL Architecture
-     │
-     ▼
-Verilog RTL
-     │
-     ▼
-Testbench
-     │
-     ▼
-RTL Simulation
-     │
-     ├── Console Verification
-     └── Waveform Verification
-     │
-     ▼
-Cadence Genus Synthesis
-     │
-     ├── Hierarchy
-     ├── Cell Area
-     ├── Power
-     └── Timing
-2. Project Information
-Parameter	Details
-Project	Day 1
-Design	adder_subtractor_4bit
-Domain	Digital VLSI / RTL Design
-HDL	Verilog HDL
-Design Type	Combinational Arithmetic Circuit
-Top Module	adder_subtractor_4bit
-Architecture	4-bit Ripple-Carry Adder with Conditional B Inversion
-Verification	Directed RTL Testbench
-Synthesis Tool	Cadence Genus Synthesis Solution
-Genus Version	21.14-s082_1
-Technology Library	tsmc18
-Operating Condition	slow (balanced_tree)
-Wireload Mode	enclosed
-3. Objectives
+------------------------------------------------------------------------
 
-The project was developed to build practical understanding of:
+## 2. Design Objective
 
-Structural Verilog design
-Hierarchical RTL architecture
-Logic-gate implementation
-Half-adder design
-Full-adder design
-Ripple-carry addition
-Two's-complement subtraction
-Arithmetic datapath design
-Directed functional verification
-RTL waveform analysis
-RTL-to-gate synthesis
-Standard-cell mapping
-Hierarchy analysis
-Area analysis
-Power analysis
-Timing-path analysis
-RTL-to-synthesis correlation
+The objectives of this project are:
 
-The goal is not only to write Verilog, but to understand:
+-   Understand hierarchical RTL design.
+-   Implement basic logic gates using Verilog.
+-   Build a half adder from XOR and AND gates.
+-   Build a full adder from two half adders and an OR gate.
+-   Construct a 4-bit ripple-carry adder.
+-   Implement addition/subtraction using conditional inversion of
+    operand `B`.
+-   Develop a directed functional verification testbench.
+-   Analyze the synthesized RTL hierarchy.
+-   Obtain synthesis area, power, and timing reports using Cadence
+    Genus.
+-   Understand the relationship between RTL hierarchy and synthesized
+    standard-cell implementation.
 
-Specification
-      ↓
-Hardware Architecture
-      ↓
-RTL
-      ↓
-Verification
-      ↓
-Synthesis
-      ↓
-PPA Analysis
-      ↓
-Engineering Interpretation
-4. Functional Specification
-4.1 Top-Level Interface
-module adder_subtractor_4bit (
-    input  [3:0] A,
-    input  [3:0] B,
-    input        MODE,
-    output [3:0] RESULT,
-    output       COUT
-);
-4.2 Inputs
-Signal	Width	Description
-A	4 bits	First arithmetic operand
-B	4 bits	Second arithmetic operand
-MODE	1 bit	Operation select
-4.3 Outputs
-Signal	Width	Description
-RESULT	4 bits	4-bit arithmetic result
-COUT	1 bit	Final carry-out
-4.4 Operation Selection
-MODE	Operation	Mathematical Operation
-0	Addition	A + B
-1	Subtraction	A - B
-5. Arithmetic Principle
+------------------------------------------------------------------------
 
-The design uses a single ripple-carry adder for both addition and subtraction.
+## 3. Functional Specification
 
-The second operand is modified using XOR gates:
+### Inputs
 
-B_modified = B XOR MODE
+  Signal     Width Description
+  -------- ------- ------------------
+  `A`        4-bit First operand
+  `B`        4-bit Second operand
+  `MODE`     1-bit Operation select
 
-The same MODE signal is connected to the carry-in of the ripple-carry adder.
+### Outputs
+
+  Signal       Width Description
+  ---------- ------- -----------------------------------------
+  `RESULT`     4-bit Arithmetic result
+  `COUT`       1-bit Carry-out / arithmetic carry indication
+
+### Operation Table
+
+    MODE Operation     Function
+  ------ ------------- ----------
+     `0` Addition      `A + B`
+     `1` Subtraction   `A - B`
+
+------------------------------------------------------------------------
+
+## 4. Arithmetic Architecture
+
+The top-level implementation uses XOR gates to conditionally invert `B`.
+
+The implemented equation is:
+
+\[ RESULT = A + (B `\oplus `{=tex}MODE) + MODE \]
 
 Therefore:
 
-$$ RESULT = A + (B \oplus MODE) + MODE $$
-MODE = 0 — Addition
-B_modified = B
-Cin = 0
+### Addition
 
-Therefore:
+For `MODE = 0`:
 
-$$ RESULT = A+B $$
-MODE = 1 — Subtraction
-B_modified = ~B
-Cin = 1
+\[ B\_{modified}=B \]
 
-Therefore:
+\[ RESULT=A+B \]
 
-$$ RESULT = A+\overline{B}+1 $$
+### Subtraction
 
-which is the two's-complement implementation of:
+For `MODE = 1`:
 
-$$ A-B $$
-Key Design Insight
+\[ B\_{modified}=`\overline{B}`{=tex} \]
 
-The same adder hardware performs both operations.
+\[ RESULT=A+`\overline{B}`{=tex}+1 \]
 
-             MODE
-               │
-               ├──────────────► Cin
-               │
-B[3:0] ────────┴──► XOR ───────► B_modified[3:0]
-                                  │
-A[3:0] ───────────────────────────┤
-                                  ▼
-                         4-bit Ripple Adder
-                                  │
-                          ┌───────┴───────┐
-                          ▼               ▼
-                       RESULT            COUT
-6. RTL Architecture
+which implements:
 
-The RTL was intentionally written hierarchically rather than describing the entire arithmetic function as a single behavioral expression.
+\[ A-B=A+`\overline{B}`{=tex}+1 \]
 
-Module Set
-and_gate
-or_gate
-not_gate
-nand_gate
-nor_gate
-xor_gate
+------------------------------------------------------------------------
 
-half_adder
-full_adder
-ripple_carry_adder_4bit
+## 5. RTL Architecture
 
-mux_2to1
-twos_complement_4bit
-subtractor_4bit
+The RTL is organized hierarchically.
 
+``` text
 adder_subtractor_4bit
-7. Logic Hierarchy
-7.1 Half Adder
+│
+├── XOR0
+├── XOR1
+├── XOR2
+├── XOR3
+│
+└── ADD_SUB
+    │
+    └── ripple_carry_adder_4bit
+        │
+        ├── FA0
+        │   ├── HA1
+        │   │   ├── XOR
+        │   │   └── AND
+        │   ├── HA2
+        │   │   ├── XOR
+        │   │   └── AND
+        │   └── OR
+        │
+        ├── FA1
+        ├── FA2
+        └── FA3
+```
 
-The half adder is constructed from:
+The final top-level architecture contains:
 
-1 × XOR
-1 × AND
+-   4 XOR gates for conditional inversion of `B`
+-   4 full adders for the 4-bit ripple-carry adder
+-   Each full adder contains:
+    -   2 half adders
+    -   1 OR gate
+-   Each half adder contains:
+    -   1 XOR gate
+    -   1 AND gate
 
-Equations:
+------------------------------------------------------------------------
 
-$$ Sum=A\oplus B $$ $$ Carry=A\cdot B $$
+## 6. RTL Modules
 
-Architecture:
+The source RTL contains the following modules:
 
-A ─────┬────► XOR ───► Sum
-       │
-B ─────┼────► AND ───► Carry
-       │
-7.2 Full Adder
+-   `and_gate`
+-   `or_gate`
+-   `not_gate`
+-   `nand_gate`
+-   `nor_gate`
+-   `xor_gate`
+-   `half_adder`
+-   `full_adder`
+-   `ripple_carry_adder_4bit`
+-   `mux_2to1`
+-   `twos_complement_4bit`
+-   `subtractor_4bit`
+-   `adder_subtractor_4bit`
 
-The full adder is constructed using:
+The final synthesized top module is:
 
-2 × Half Adder
-1 × OR gate
-
-Architecture:
-
-             ┌──────────────┐
-A ──────────►│              │
-B ──────────►│    HA1       │
-             │              │
-             └──────┬───────┘
-                    │ sum1
-                    ▼
-             ┌──────────────┐
-Cin ────────►│    HA2       │────► Sum
-             └──────┬───────┘
-                    │
-             carry2 │
-                    ▼
-carry1 ─────────► OR ───────► Cout
-
-Full-adder equations:
-
-$$ Sum=A\oplus B\oplus Cin $$ $$ Cout=AB+Cin(A\oplus B) $$
-8. 4-Bit Ripple-Carry Adder
-
-Four full adders are connected sequentially.
-
-A[0] B[0] Cin
-       │
-       ▼
-     ┌─────┐
-     │ FA0 │──► C1
-     └─────┘
-       │
-       ▼
-     ┌─────┐
-     │ FA1 │──► C2
-     └─────┘
-       │
-       ▼
-     ┌─────┐
-     │ FA2 │──► C3
-     └─────┘
-       │
-       ▼
-     ┌─────┐
-     │ FA3 │──► COUT
-     └─────┘
-
-Carry propagation:
-
-Cin → FA0 → C1 → FA1 → C2 → FA2 → C3 → FA3 → COUT
-
-This architecture is simple and area-efficient for a small datapath, but the carry dependency creates a longer propagation path as the width increases.
-
-9. Top-Level Architecture
-
-The final module combines:
-
-4 × XOR gates
-+
-4-bit Ripple-Carry Adder
-
-Architecture:
-
-                     MODE
-                       │
-           ┌───────────┼───────────┐
-           │           │           │
-          XOR         XOR         XOR         XOR
-           ▲           ▲           ▲           ▲
-          B[0]        B[1]        B[2]        B[3]
-           │           │           │           │
-           └───────────┴───────────┴───────────┘
-                       │
-                       ▼
-                 B_modified[3:0]
-                       │
-                       ▼
-A[3:0] ─────────► 4-bit RCA ◄──────── MODE
-                       │
-                 ┌─────┴─────┐
-                 ▼           ▼
-              RESULT        COUT
-10. RTL Source
-
-Primary RTL source:
-
-rtl/day1_design.v
-
-The source contains the complete hierarchical implementation, including:
-
-Basic gates
-Half adder
-Full adder
-4-bit ripple-carry adder
-2:1 multiplexer
-4-bit two's-complement block
-4-bit subtractor
-Final 4-bit adder/subtractor
-
-The final top-level module is:
-
+``` text
 adder_subtractor_4bit
-11. Verification
+```
 
-Testbench:
+The final top-level implementation directly instantiates the four XOR
+gates and the ripple-carry adder.
 
-tb/day1_tb.v
+------------------------------------------------------------------------
 
-The verification approach uses a directed Verilog testbench with console-based checking and waveform inspection.
+## 7. Verification Environment
 
-Verification Flow
-RTL
- │
- ▼
-Testbench
- │
- ▼
-Simulation
- ├──────────────► Console PASS/FAIL
- │
- └──────────────► Waveform
-Verification Coverage
+The project uses a directed Verilog testbench:
 
-The testbench exercises:
+``` text
+day1_tb.v
+```
 
-Basic logic gates
-Half adder
-Full adder
-4-bit ripple-carry adder
-2:1 multiplexer
-Two's-complement block
-4-bit subtractor
-Final adder/subtractor
-Representative Arithmetic Cases
-Addition:
-5 + 3   = 8
-15 + 1  = 16
-7 + 2   = 9
+The testbench instantiates and verifies the RTL hierarchy, including:
 
-Subtraction:
-5 - 3   = 2
-10 - 4  = 6
-3 - 5   = -2  → 4'b1110
-15 - 15 = 0
+-   Basic logic gates
+-   Half adder
+-   Full adder
+-   4-bit ripple-carry adder
+-   2:1 multiplexer
+-   4-bit two's-complement block
+-   4-bit subtractor
+-   Final 4-bit adder/subtractor
 
-The top-level arithmetic tests are directed cases; they should not be described as exhaustive verification of every possible A, B, and MODE combination.
+The testbench uses `$display` statements and conditional `if/else`
+checks to report `PASS` or `FAIL`.
 
-12. Simulation Evidence
+------------------------------------------------------------------------
 
-Simulation-related evidence is maintained under:
+## 8. Test Cases
 
-simulation/
+  Block                        Test Cases
+  -------------------------- ------------
+  Basic Gates                           4
+  Half Adder                            4
+  Full Adder                            8
+  4-bit Ripple-Carry Adder              4
+  2:1 MUX                               4
+  4-bit Two's Complement                4
+  4-bit Subtractor                      4
+  Final Adder/Subtractor                7
 
-and screenshots are maintained under:
+### Full Adder Verification
 
-images/
+The full adder is tested for all eight possible combinations of:
 
-The evidence is intended to demonstrate:
+``` text
+A, B, Cin
+```
 
-Correct input application
-Correct operation-mode selection
-Correct result generation
-Correct carry-out behavior
-Correct arithmetic transitions
-PASS/FAIL verification output
-13. Cadence Genus Synthesis
+This provides exhaustive combinational testing for the 1-bit full-adder
+block.
 
-The design was synthesized using:
+### Final Adder/Subtractor Verification
 
-Cadence Genus Synthesis Solution
-Version: 21.14-s082_1
-Report Configuration
-Module:
+The top-level design is tested for both addition and subtraction,
+including cases such as:
+
+``` text
+5 + 3
+15 + 1
+7 + 2
+
+5 - 3
+10 - 4
+3 - 5
+15 - 15
+```
+
+The top-level test cases are directed functional tests and are **not
+exhaustive for all 4-bit input combinations**.
+
+------------------------------------------------------------------------
+
+## 9. Verification Status
+
+-   [x] RTL simulation
+-   [x] Directed functional testing
+-   [x] Waveform inspection
+-   [x] Synthesis
+-   [x] Synthesized hierarchy analysis
+-   [x] Area analysis
+-   [x] Power analysis
+-   [x] Timing-path analysis
+-   [ ] Functional coverage analysis
+-   [ ] Formal verification
+-   [ ] Constrained-random verification
+-   [ ] UVM verification
+
+> Coverage analysis, formal verification, constrained-random
+> verification, and UVM are not claimed for this project unless
+> corresponding evidence is added to the repository.
+
+------------------------------------------------------------------------
+
+## 10. Synthesis
+
+### Synthesis Tool
+
+**Cadence Genus Synthesis Solution**
+
+Reported tool version:
+
+``` text
+Genus(TM) Synthesis Solution 21.14-s082_1
+```
+
+### Top Module
+
+``` text
 adder_subtractor_4bit
+```
 
-Operating condition:
+### Operating Condition
+
+``` text
 slow (balanced_tree)
+```
 
-Wireload mode:
+### Wireload Mode
+
+``` text
 enclosed
+```
 
-Area mode:
-timing library
+------------------------------------------------------------------------
 
-Technology library:
-tsmc18
-14. Synthesis Hierarchy
+## 11. Synthesized Design Hierarchy
 
-The synthesized hierarchy reported by Genus is consistent with the intended RTL structure.
+The Genus hierarchy report confirms the following synthesized structure:
 
+``` text
 adder_subtractor_4bit
 │
 ├── ADD_SUB
 │   └── ripple_carry_adder_4bit
-│       │
 │       ├── FA0
-│       │   ├── HA1
-│       │   │   ├── AND1
-│       │   │   └── XOR1
-│       │   ├── HA2
-│       │   │   ├── AND1
-│       │   │   └── XOR1
-│       │   └── OR1
-│       │
 │       ├── FA1
 │       ├── FA2
 │       └── FA3
@@ -440,214 +330,232 @@ adder_subtractor_4bit
 ├── XOR1
 ├── XOR2
 └── XOR3
+```
 
-The four full-adder stages form the ripple-carry datapath.
+Each full adder is synthesized as:
 
-15. Cell Area Analysis
+``` text
+Full Adder
+├── HA1
+│   ├── AND
+│   └── XOR
+├── HA2
+│   ├── AND
+│   └── XOR
+└── OR
+```
+
+The synthesized hierarchy matches the intended RTL architecture.
+
+------------------------------------------------------------------------
+
+## 12. Area Analysis
 
 The Genus cell-area report gives:
 
-Standard Cell	Instances	Area
-AND2X1	8	106.445
-OR2X1	3	39.917
-OR2XL	1	13.306
-XOR2XL	12	319.334
-Total	24	479.002
-Area Summary
-Total cells = 24
-Logic cells = 24
-Physical cells = 0
-Total reported area = 479.002
+  Cell Type     Instances   Reported Area
+  ----------- ----------- ---------------
+  `AND2X1`              8         106.445
+  `OR2X1`               3          39.917
+  `OR2XL`               1          13.306
+  `XOR2XL`             12         319.334
+  **Total**        **24**     **479.002**
 
-The supplied Genus report does not explicitly establish µm² as the area unit. Therefore, this repository reports the value as:
+### Area Summary
 
-479.002 library area units
+-   Total synthesized cell instances: **24**
+-   Total reported area: **479.002 library area units**
+-   Logic area: **479.002**
+-   Physical-cell area: **0**
 
-rather than incorrectly labeling it as physical area.
+The unit of `479.002` should not be labeled as `µm²` unless the
+corresponding `tsmc18` library documentation explicitly defines the
+reported area in square micrometers.
 
-16. Cell Composition
+### Hierarchical Area
 
-The synthesized design contains:
+  Hierarchy                   Cells   Reported Area
+  ------------------------- ------- ---------------
+  `adder_subtractor_4bit`        24         479.002
+  `ADD_SUB` / 4-bit RCA          20         372.557
+  `FA0`                           5          93.139
+  `FA1`                           5          93.139
+  `FA2`                           5          93.139
+  `FA3`                           5          93.139
+  Top-level XOR gates             4       106.445\*
 
-12 × XOR
- 8 × AND
- 4 × OR
---------------
-24 total cells
+\*The individual XOR contribution is represented by the four `XOR2XL`
+cells in the cell-area report.
 
-This agrees with the structural design:
+The synthesized design therefore consists of:
 
-4 top-level XOR gates
+\[ 4 XOR + 4(2 XOR + 2 AND + 1 OR)=24 cells \]
 
+------------------------------------------------------------------------
+
+## 13. Power Analysis
+
+The Genus power report was generated for:
+
+``` text
+PDB Frame: /stim#0/frame#0
+Power Unit: W
+```
+
+  Power Component             Value (W)    Value (µW)   Percentage
+  ----------------- ------------------- ------------- ------------
+  Leakage                 `2.33863e-08`   `0.0233863`        0.12%
+  Internal                `1.44756e-05`     `14.4756`       75.05%
+  Switching               `4.78905e-06`     `4.78905`       24.83%
+  **Total**           **`1.92881e-05`**   **19.2881**     **100%**
+
+### Power Observation
+
+The reported total power is:
+
+\[ P\_{total}=1.92881`\times10`{=tex}\^{-5} W \]
+
+or:
+
+\[ P\_{total}=19.2881 `\mu `{=tex}W \]
+
+The reported power is dominated by internal power, followed by switching
+power.
+
+Power results are dependent on the stimulus, technology library
+characterization, operating conditions, and synthesis/power-analysis
+configuration.
+
+------------------------------------------------------------------------
+
+## 14. Timing Analysis
+
+The Genus timing report contains the following path:
+
+  Parameter             Reported Value
+  --------------------- ------------------------
+  Path Type             **UNCONSTRAINED**
+  Startpoint            `B[0]`
+  Endpoint              `COUT`
+  Data Path             `2352 ps`
+  Data Path             `2.352 ns`
+  Operating Condition   `slow (balanced_tree)`
+
+The reported path represents carry propagation through:
+
+``` text
+FA0 → FA1 → FA2 → FA3 → COUT
+```
+
+### Reported Delay
+
+\[ 2352 ps = 2.352 ns \]
+
+### Timing Interpretation
+
+The `2.352 ns` value is the reported data-path delay for the displayed
+unconstrained path.
+
+Because the path is reported as **UNCONSTRAINED**, this report should
+**not** be used to claim:
+
+-   Timing closure
+-   Setup slack
+-   Hold slack
+-   Maximum operating frequency
+-   A valid clock period
+
+A proper clock-constrained timing analysis would be required before
+making those claims.
+
+------------------------------------------------------------------------
+
+## 15. RTL-to-Synthesis Correlation
+
+The synthesized implementation corresponds directly to the RTL
+hierarchy.
+
+### RTL
+
+``` text
+adder_subtractor_4bit
+ ├── 4 × XOR
+ └── ripple_carry_adder_4bit
+      └── 4 × full_adder
+```
+
+### Synthesized Cell Structure
+
+``` text
+4 × XOR
 +
+4 × full_adder
 
-4 full adders ×
-(
-  2 XOR
-  2 AND
-  1 OR
-)
-
-= 12 XOR + 8 AND + 4 OR
-
-= 24 cells
-
-This is an important RTL-to-gate-level correlation.
-
-17. Hierarchical Area
-
-The hierarchical report gives:
-
-Hierarchy	Cell Count	Area
-adder_subtractor_4bit	24	479.002
-ADD_SUB / RCA	20	372.557
-FA0	5	93.139
-FA1	5	93.139
-FA2	5	93.139
-FA3	5	93.139
+Each full_adder:
+2 × XOR
+2 × AND
+1 × OR
+```
 
 Therefore:
 
-RCA:
-4 Full Adders × 5 cells
-= 20 cells
+``` text
+4 top-level XOR
++ 4 × (2 XOR + 2 AND + 1 OR)
+= 12 XOR + 8 AND + 4 OR
+= 24 cells
+```
 
-Top-level XOR:
-4 cells
+This matches the Genus cell-area report.
 
-Total:
-20 + 4 = 24 cells
-18. Power Analysis
+------------------------------------------------------------------------
 
-The supplied Genus power report uses:
+## 16. Simulation and Waveform
 
-Power Unit: W
-PDB Frame: /stim#0/frame#0
-Power Breakdown
-Category	Leakage	Internal	Switching	Total	Row %
-Logic	2.33863e-08 W	1.44756e-05 W	4.78905e-06 W	1.92881e-05 W	100%
-Total	2.33863e-08 W	1.44756e-05 W	4.78905e-06 W	1.92881e-05 W	100%
-Percentage Breakdown
-Power Component	Percentage
-Leakage	0.12%
-Internal	75.05%
-Switching	24.83%
-Total	100%
-Total Power
-$$ P_{total}=1.92881\times10^{-5}\ W $$ $$ P_{total}=19.2881\ \mu W $$
+The repository contains simulation and waveform evidence for the RTL
+design.
 
-The reported power corresponds to the supplied stimulus frame and synthesis/power-analysis configuration.
+Recommended image placement:
 
-19. Timing Analysis
+``` text
+images/
+├── rtl_waveform.png
+└── gate_level_waveform.png
+```
 
-The Genus timing report identifies:
+Example waveform checks should demonstrate:
 
-Timing Parameter	Result
-Path Type	UNCONSTRAINED
-Startpoint	B[0]
-Endpoint	COUT
-Data Path	2352 ps
-Equivalent	2.352 ns
-Operating Condition	slow (balanced_tree)
-Critical Observed Path
-B[0]
- ↓
-XOR
- ↓
-FA0
- ↓
-FA1
- ↓
-FA2
- ↓
-FA3
- ↓
-COUT
+-   Addition mode
+-   Subtraction mode
+-   Result transitions
+-   Carry-out behavior
+-   Correct response to input changes
 
-The reported data-path delay is:
+------------------------------------------------------------------------
 
-$$ 2352\ ps = 2.352\ ns $$
-Important Timing Qualification
+## 17. Gate-Level Verification
 
-The report explicitly identifies the path as:
+Gate-level verification should be documented using the synthesized
+netlist and corresponding gate-level simulation results.
 
-UNCONSTRAINED
+The repository should contain the actual gate-level waveform/report
+evidence used for this claim.
 
-Therefore, this project reports the observed synthesized data-path delay, but does not claim:
+``` text
+simulation/
+└── gate_level/
+```
 
-Timing closure
-Positive setup slack
-Positive hold slack
-Maximum operating frequency
-A validated clock period
+> The RTL testbench itself does not prove gate-level verification.
+> Gate-level verification is claimed only when the synthesized netlist
+> has actually been simulated and the corresponding evidence is
+> included.
 
-Those conclusions require proper timing constraints and static timing analysis.
+------------------------------------------------------------------------
 
-20. PPA Summary
-Metric	Measured Result
-Synthesized cells	24
-Reported area	479.002 library area units
-Total reported power	19.2881 µW
-Observed data-path delay	2.352 ns
-Timing path	B[0] → COUT
-Timing status	Unconstrained
-Operating condition	slow (balanced_tree)
-Technology library	tsmc18
-PPA Interpretation
-AREA
-24 standard-cell instances
-        │
-        ▼
-479.002 library area units
+## 18. Repository Structure
 
-POWER
-        │
-        ▼
-19.2881 µW reported total power
-
-TIMING
-        │
-        ▼
-2.352 ns observed B[0] → COUT path
-        │
-        ▼
-UNCONSTRAINED
-21. RTL-to-Gate Correlation
-
-One of the main objectives of this project is to understand what synthesis does to the RTL.
-
-RTL Intent
-4 × XOR
-+
-4 × Full Adder
-Full-Adder RTL Structure
-2 × Half Adder
-+
-1 × OR
-Synthesized Cell Structure
-12 × XOR2XL
-8  × AND2X1
-3  × OR2X1
-1  × OR2XL
-----------------
-24 cells
-
-The synthesized cell count matches the expected structural implementation.
-
-This provides a direct connection between:
-
-RTL hierarchy
-      ↓
-Logic structure
-      ↓
-Standard-cell mapping
-      ↓
-Area
-      ↓
-Timing
-      ↓
-Power
-22. Repository Structure
+``` text
 Day-1/
 │
 ├── README.md
@@ -659,376 +567,226 @@ Day-1/
 │   └── day1_tb.v
 │
 ├── simulation/
-│   └── [simulation console/output files]
+│   ├── rtl_simulation/
+│   ├── waveform/
+│   └── gate_level/
+│
+├── synthesis/
+│   ├── genus/
+│   ├── hierarchy/
+│   ├── area/
+│   ├── power/
+│   └── timing/
 │
 ├── reports/
 │   ├── area_report.txt
-│   ├── power_report.txt
-│   ├── timing_report.txt
+│   ├── cell_area_report.txt
 │   ├── hierarchy_report.txt
-│   └── cell_area_report.txt
+│   ├── power_report.txt
+│   └── timing_report.txt
 │
 ├── images/
 │   ├── rtl_waveform.png
 │   ├── gate_level_waveform.png
-│   └── synthesis_hierarchy.png
+│   ├── synthesis_hierarchy.png
+│   ├── area.png
+│   ├── power.png
+│   └── timing.png
 │
 ├── docs/
 │   └── project_report.pdf
 │
 └── src/
     └── adder_subtractor_4bit.v
+```
 
-Keep the actual filenames in GitHub consistent with this structure. If a file is not present, remove that entry rather than creating an empty placeholder.
-
-23. File Description
-Path	Purpose
-README.md	Project documentation
-rtl/day1_design.v	Complete hierarchical Verilog RTL
-tb/day1_tb.v	Verification testbench
-simulation/	Simulation evidence/output
-reports/area_report.txt	Genus area report
-reports/power_report.txt	Genus power report
-reports/timing_report.txt	Genus timing report
-reports/hierarchy_report.txt	Genus hierarchy report
-reports/cell_area_report.txt	Standard-cell area report
-images/	Waveform and synthesis screenshots
-docs/project_report.pdf	Detailed project report
-src/adder_subtractor_4bit.v	Dedicated top-level source copy
-24. Tools Used
-HDL / RTL
-Verilog HDL
-Structural RTL design
-Verification
-RTL simulation
-Directed testbench
-Console-based PASS/FAIL checking
-Waveform analysis
-Synthesis
-Cadence Genus Synthesis Solution 21.14-s082_1
-Technology
-tsmc18 standard-cell library
-25. Key Learning Outcomes
-
-This project demonstrates practical understanding of:
-
-RTL hierarchy
-Structural Verilog
-Combinational logic
-Half adders
-Full adders
-Ripple-carry adders
-Two's-complement arithmetic
-Arithmetic datapaths
-Directed verification
-Waveform debugging
-Synthesis
-Standard-cell mapping
-Hierarchy reports
-Area reports
-Power reports
-Timing reports
-RTL-to-gate correlation
-Basic PPA analysis
-26. Important Design Trade-Off
-
-The selected architecture is a Ripple-Carry Adder (RCA).
-
-Advantage
-Simple architecture
-        +
-Low structural complexity
-        +
-Easy to design and verify
-Limitation
-Carry dependency
-        ↓
-Longer propagation delay
-        ↓
-Timing becomes worse as bit width increases
+Adjust filenames and folders to match the actual files uploaded to the
+repository.
 
-For larger datapaths, alternative architectures can be studied:
-
-Ripple Carry
-      vs
-Carry Look-Ahead
-      vs
-Carry Select
-      vs
-Kogge-Stone
-      vs
-Brent-Kung
+------------------------------------------------------------------------
 
-This Day-1 implementation establishes the baseline for future PPA comparisons.
-
-27. Common Engineering Mistakes Avoided
-1. Treating subtraction as a separate datapath
-
-The design instead reuses the same adder:
-
-$$ A-B=A+\overline B+1 $$
-2. Forgetting the +1
-
-Simply using:
-
-A + ~B
-
-does not implement two's-complement subtraction correctly.
-
-The MODE signal provides the required carry-in:
-
-Cin = MODE
-3. Confusing carry-out with signed overflow
+## 19. Tools and Technologies
 
-COUT is not automatically equivalent to signed overflow.
+### HDL
 
-Signed overflow requires separate interpretation based on operand and result sign bits.
+-   Verilog HDL
 
-4. Calling an unconstrained timing result timing closure
+### Simulation / Verification
 
-The supplied Genus path is:
+-   RTL simulation
+-   Directed testbench
+-   Waveform analysis
+-   Gate-level simulation, where applicable
 
-UNCONSTRAINED
+### Synthesis / Analysis
 
-Therefore, 2.352 ns is reported as an observed data-path delay, not as a timing-closure result.
-
-28. Interview Questions
-Q1. How does this design perform both addition and subtraction?
+-   Cadence Genus Synthesis Solution `21.14-s082_1`
+-   `tsmc18` standard-cell library
+-   Area analysis
+-   Power analysis
+-   Timing-path analysis
+-   Hierarchy analysis
 
-Using conditional inversion of B and setting the carry-in equal to MODE:
+------------------------------------------------------------------------
 
-$$ A+(B\oplus MODE)+MODE $$
-Q2. Why is XOR suitable for conditional inversion?
-
-Because:
-
-B XOR 0 = B
-B XOR 1 = ~B
-Q3. Why is MODE connected to the RCA carry-in?
-
-For subtraction:
-
-$$ A-B=A+\overline B+1 $$
-
-MODE=1 supplies the required +1.
-
-Q4. What architecture is used?
-
-A 4-bit ripple-carry adder.
-
-Q5. Why does ripple carry have a timing limitation?
-
-Each full adder depends on the carry generated by the previous stage.
-
-Q6. How many synthesized cells are reported?
-24
-Q7. What is the reported synthesized area?
-479.002 library area units
-Q8. What is the reported power?
-1.92881e-05 W
-= 19.2881 µW
-Q9. What is the reported timing path?
-B[0] → COUT
-Q10. What is the reported path delay?
-2352 ps = 2.352 ns
-Q11. Is the timing path constrained?
-
-No. The Genus report identifies it as:
-
-UNCONSTRAINED
-Q12. What would you change to improve timing?
-
-For wider arithmetic datapaths, investigate faster carry architectures such as carry-lookahead, carry-select, or parallel-prefix adders, then compare area, power, and timing after synthesis.
-
-29. Industry Relevance
-
-This project demonstrates foundational skills used in:
-
-RTL Design
-ASIC Design
-FPGA Design
-Design Verification
-Digital Logic Design
-VLSI Front-End Design
-
-The specific arithmetic block is representative of datapath logic used inside larger digital systems.
-
-The important industry skill is not merely implementing an adder, but demonstrating the complete engineering process:
-
-Design
-→ Verify
-→ Debug
-→ Synthesize
-→ Analyze
-→ Document
-→ Explain
-30. Project Status
-Completed
- Specification
- RTL architecture
- Structural Verilog
- Logic-gate modules
- Half adder
- Full adder
- 4-bit ripple-carry adder
- Two's-complement subtraction
- 4-bit adder/subtractor
- Directed testbench
- RTL simulation
- Console verification
- Waveform verification
- Genus synthesis
- Hierarchy analysis
- Area analysis
- Power analysis
- Timing-path analysis
- Project documentation
-Not Claimed in This Day-1 Project
- UVM verification
- Constrained-random verification
- Formal verification
- Functional coverage
- Timing closure
- Physical design
- Place-and-route
- Signoff STA
-31. Future Improvements
-
-Possible next steps include:
-
-Exhaustive top-level verification for all 256 A/B combinations in both modes.
-SystemVerilog assertions.
-Functional coverage.
-Constrained-random verification.
-Clock-constrained STA.
-Comparison against carry-lookahead architecture.
-Comparison against carry-select architecture.
-Comparison against parallel-prefix adders.
-PPA benchmarking across different adder architectures.
-FPGA synthesis and resource comparison.
-32. Project Evidence
-
-The repository provides evidence for the engineering flow through:
-
-RTL
- ↓
-Testbench
- ↓
-Simulation
- ↓
-Waveform
- ↓
-Genus Synthesis
- ↓
-Hierarchy
- ↓
-Area
- ↓
-Power
- ↓
-Timing
-Evidence Files
-reports/area_report.txt
-reports/power_report.txt
-reports/timing_report.txt
-reports/hierarchy_report.txt
-reports/cell_area_report.txt
-Visual Evidence
-images/rtl_waveform.png
-images/gate_level_waveform.png
-images/synthesis_hierarchy.png
-Documentation
-docs/project_report.pdf
-33. Final Results
-============================================================
-DAY 1 — 4-BIT ADDER/SUBTRACTOR
-============================================================
-
-Top Module:
-    adder_subtractor_4bit
-
-HDL:
-    Verilog
-
-Synthesis:
-    Cadence Genus 21.14-s082_1
-
-Library:
-    tsmc18
-
-Operating Condition:
-    slow (balanced_tree)
-
-Synthesized Cells:
-    24
-
-Reported Area:
-    479.002 library area units
-
-Reported Total Power:
-    1.92881e-05 W
-    = 19.2881 µW
-
-Observed Timing Path:
-    B[0] → COUT
-
-Observed Data Path:
-    2352 ps
-    = 2.352 ns
-
-Timing Status:
-    UNCONSTRAINED
-
-============================================================
-34. Author
-
-Omkar Kalmesh Hadapad
-
-B.E. Electronics & Communication Engineering
-SDM Institute of Technology, Ujire, Karnataka, India
-
-Focus: Digital VLSI • RTL Design • Verilog • ASIC Design • Verification
-
-GitHub: Omkar-hadapad
-LinkedIn: omkar-kalmesh-hadapad
-
-35. Repository Purpose
-
-This repository is part of a structured 30-project Digital VLSI / RTL Design training roadmap.
-
-The long-term objective is to develop the ability to independently:
-
-Understand a specification
-        ↓
-Design hardware architecture
-        ↓
-Write synthesizable RTL
-        ↓
-Build a verification environment
-        ↓
-Debug functional issues
-        ↓
-Synthesize the design
-        ↓
-Analyze area / power / timing
-        ↓
-Understand implementation trade-offs
-        ↓
-Document the project
-        ↓
-Explain the design in technical interviews
-⭐ Day 1 Complete
-
-Project: adder_subtractor_4bit
-Domain: Digital VLSI / RTL Design
-HDL: Verilog
-Synthesis: Cadence Genus
-Status: Completed
-"""
-
-path = Path("/mnt/data/Day-1_README.md")
-path.write_text(readme, encoding="utf-8")
-
-print(f"Created: {path}")
-print(f"Lines: {len(readme.splitlines())}")
-print(f"Characters: {len(readme)}")
+## 20. Key Learning Outcomes
+
+Through this project, the following concepts were practiced:
+
+-   Structural Verilog design
+-   Combinational logic design
+-   Half-adder and full-adder architecture
+-   Ripple-carry addition
+-   Two's-complement subtraction
+-   Hierarchical RTL design
+-   Directed functional verification
+-   Waveform-based debugging
+-   RTL-to-gate synthesis
+-   Standard-cell mapping
+-   Hierarchy inspection
+-   Area analysis
+-   Power analysis
+-   Timing-path analysis
+-   RTL-to-synthesis correlation
+
+------------------------------------------------------------------------
+
+## 21. Design Considerations
+
+### Ripple-Carry Architecture
+
+The design uses a ripple-carry adder. Carry information propagates from
+the least significant full adder toward the most significant full adder.
+
+Therefore, the critical path can include multiple full-adder stages.
+
+### Conditional Operand Inversion
+
+The XOR gates implement:
+
+``` text
+MODE = 0 → B_modified = B
+MODE = 1 → B_modified = ~B
+```
+
+The same `MODE` signal is also applied as the carry-in to implement the
+`+1` required for two's-complement subtraction.
+
+------------------------------------------------------------------------
+
+## 22. Limitations
+
+The current Day-1 implementation has the following scope:
+
+-   Ripple-carry architecture has serial carry propagation.
+-   Top-level directed tests are not exhaustive.
+-   No UVM environment is included.
+-   No constrained-random verification is included.
+-   No formal verification is included.
+-   Coverage analysis is not claimed without corresponding evidence.
+-   Timing is reported for an unconstrained path; timing closure is not
+    claimed.
+-   Area units should be interpreted according to the technology library
+    definition.
+
+------------------------------------------------------------------------
+
+## 23. Possible Future Improvements
+
+Potential extensions include:
+
+-   Exhaustive top-level functional verification
+-   SystemVerilog assertions
+-   Functional coverage
+-   Constrained-random verification
+-   UVM-based verification
+-   Clock-constrained timing analysis
+-   Comparison with carry-lookahead architecture
+-   Comparison with carry-select architecture
+-   PPA comparison between different adder architectures
+-   FPGA implementation and resource analysis
+
+------------------------------------------------------------------------
+
+## 24. Interview Discussion Points
+
+### Q1. How does the design perform subtraction?
+
+It uses two's-complement arithmetic:
+
+\[ A-B=A+`\overline{B}`{=tex}+1 \]
+
+### Q2. Why is XOR used before the ripple-carry adder?
+
+The XOR gates conditionally invert `B` according to `MODE`.
+
+### Q3. Why is `MODE` connected to the adder carry-in?
+
+When `MODE=1`, it supplies the `+1` required by two's-complement
+subtraction.
+
+### Q4. What is the main timing limitation of the architecture?
+
+The ripple-carry structure requires carry propagation through multiple
+full-adder stages.
+
+### Q5. What did synthesis produce?
+
+The reported implementation contains **24 standard-cell instances** with
+a reported area of **479.002 library area units**.
+
+### Q6. What is the reported power?
+
+The Genus report gives a total power of:
+
+\[ 19.2881 `\mu `{=tex}W \]
+
+for the reported stimulus frame.
+
+### Q7. What timing value was reported?
+
+The displayed unconstrained path from `B[0]` to `COUT` has a reported
+data-path delay of:
+
+\[ 2.352 ns \]
+
+------------------------------------------------------------------------
+
+## 25. Project Status
+
+**Day 1 --- Completed RTL Design and Initial RTL-to-Synthesis Analysis**
+
+Current evidence includes:
+
+-   RTL design
+-   Directed testbench
+-   Functional verification
+-   Waveform analysis
+-   Synthesized hierarchy
+-   Cell-area report
+-   Power report
+-   Timing-path report
+
+Additional verification claims should be added only when the
+corresponding evidence is included in the repository.
+
+------------------------------------------------------------------------
+
+## 26. Author
+
+**Omkar Kalmesh Hadapad**
+
+B.E. Electronics & Communication Engineering\
+SDM Institute of Technology, Ujire, Karnataka
+
+### Portfolio
+
+-   GitHub: `Omkar-hadapad`
+-   LinkedIn: `omkar-kalmesh-hadapad`
+
+------------------------------------------------------------------------
+
+## 27. License
+
+This project is intended for academic, learning, portfolio, and
+educational purposes.
