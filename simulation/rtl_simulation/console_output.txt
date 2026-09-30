@@ -1,1 +1,71 @@
-hello
+ncsim> 
+ncsim> database -open waves -into waves.shm -default
+Created default SHM database waves
+ncsim> probe -create -shm day1_tb.A day1_tb.A4 day1_tb.B day1_tb.B4 day1_tb.Cin day1_tb.Cin4 day1_tb.Cout4 day1_tb.Difference day1_tb.FA_Cout day1_tb.FA_Sum day1_tb.Final_Cout day1_tb.HA_Carry day1_tb.HA_Sum day1_tb.I0 day1_tb.I1 day1_tb.MODE day1_tb.MUX_Y day1_tb.Result day1_tb.S day1_tb.Sub_Cout day1_tb.Sum4 day1_tb.TC_B day1_tb.TC_Y day1_tb.and_y day1_tb.nand_y day1_tb.nor_y day1_tb.not_y day1_tb.or_y day1_tb.xor_y
+Created probe 1
+ncsim> run
+=================================================
+       DAY 1 ARITHMETIC RTL VERIFICATION
+=================================================
+
+---- 1. GATE VERIFICATION ----
+GATE TEST 00 : PASS
+GATE TEST 01 : PASS
+GATE TEST 10 : PASS
+GATE TEST 11 : PASS
+
+---- 2. HALF ADDER VERIFICATION ----
+HA 00 : PASS
+HA 01 : PASS
+HA 10 : PASS
+HA 11 : PASS
+
+---- 3. FULL ADDER VERIFICATION ----
+FA 000 : PASS
+FA 001 : PASS
+FA 010 : PASS
+FA 011 : PASS
+FA 100 : PASS
+FA 101 : PASS
+FA 110 : PASS
+FA 111 : PASS
+
+---- 4. 4-BIT ADDER VERIFICATION ----
+RCA 5 + 3 : PASS
+RCA 15 + 1 : PASS
+RCA 0 + 0 : PASS
+RCA 9 + 6 : PASS
+
+---- 5. MUX VERIFICATION ----
+MUX S=0 : PASS
+MUX S=1 : PASS
+MUX 10 S=0 : PASS
+MUX 10 S=1 : PASS
+
+---- 6. 2'S COMPLEMENT VERIFICATION ----
+TC of 0000 : PASS
+TC of 0001 : PASS
+TC of 0011 : PASS
+TC of 0101 : PASS
+
+---- 7. 4-BIT SUBTRACTOR VERIFICATION ----
+SUB 5 - 3 : PASS
+SUB 10 - 4 : PASS
+SUB 15 - 15 : PASS
+SUB 3 - 5 : PASS
+
+---- 8. FINAL ADDER/SUBTRACTOR ----
+FINAL ADD 5 + 3 : PASS
+FINAL ADD 15 + 1 : PASS
+FINAL ADD 7 + 2 : PASS
+FINAL SUB 5 - 3 : PASS
+FINAL SUB 10 - 4 : PASS
+FINAL SUB 3 - 5 : PASS
+FINAL SUB 15 - 15 : PASS
+
+=================================================
+       DAY 1 VERIFICATION COMPLETED
+=================================================
+Simulation complete via $finish(1) at time 390 NS + 0
+./day1_tb.v:710         $finish;
+ncsim> 
